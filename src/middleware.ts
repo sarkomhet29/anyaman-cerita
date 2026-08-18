@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-// Middleware ini jalan di setiap request — tempat pusat untuk security header
-// dan rate limiting sederhana sebelum request sampai ke halaman/API.
+// Middleware ini jalan di setiap request — tempat pusat untuk security header,
+// rate limiting sederhana, dan proteksi login sebelum request sampai ke halaman/API.
 
 // Rate limiter sangat sederhana berbasis memory (cukup untuk trafik kecil-menengah;
 // untuk trafik besar sebaiknya pindah ke Redis/Upstash yang juga ada free tier-nya)
@@ -20,13 +21,34 @@ function isRateLimited(ip: string): boolean {
   return timestamps.length > MAX_REQUESTS;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
 
   if (request.nextUrl.pathname.startsWith("/api") && isRateLimited(ip)) {
     return new NextResponse("Terlalu banyak request, coba lagi nanti.", {
       status: 429,
     });
+  }
+
+  // Lindungi /dashboard — wajib punya cookie sesi yang valid, kalau tidak
+  // dilempar ke halaman login.
+  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    const token = request.cookies.get("session")?.value;
+    const secret = process.env.SESSION_SECRET;
+    let valid = false;
+
+    if (token && secret) {
+      try {
+        await jwtVerify(token, new TextEncoder().encode(secret));
+        valid = true;
+      } catch {
+        valid = false;
+      }
+    }
+
+    if (!valid) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   const response = NextResponse.next();

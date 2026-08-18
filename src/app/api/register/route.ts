@@ -11,6 +11,17 @@ import { hashPassword } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
+    // Aplikasi ini hanya untuk SATU admin (pemilik bisnis). Supaya endpoint
+    // ini tidak jadi celah pendaftaran publik ke dashboard, registrasi
+    // hanya diizinkan sekali — saat belum ada user sama sekali di database.
+    const jumlahUser = await prisma.user.count();
+    if (jumlahUser > 0) {
+      return NextResponse.json(
+        { error: "Registrasi ditutup. Sudah ada akun admin." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
 

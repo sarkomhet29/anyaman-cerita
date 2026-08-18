@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { DashboardRow } from "@/components/anyaman/DashboardRow";
+import { logoutAction } from "@/app/login/actions";
 
 type DashboardRowData = {
   id: string;
@@ -53,12 +54,22 @@ export default async function DashboardPage() {
               {rows.length} undangan dibuat · {totalAktif} aktif
             </p>
           </div>
-          <a
-            href="/buat"
-            className="w-fit rounded-full bg-ink px-6 py-3 text-sm font-medium text-white hover:bg-black"
-          >
-            + Buat Undangan
-          </a>
+          <div className="flex gap-3">
+            <a
+              href="/buat"
+              className="w-fit rounded-full bg-ink px-6 py-3 text-sm font-medium text-white hover:bg-black"
+            >
+              + Buat Undangan
+            </a>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="w-fit rounded-full border border-line px-6 py-3 text-sm font-medium text-ink hover:border-ink"
+              >
+                Keluar
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="mt-10 overflow-hidden rounded-2xl border border-line">
