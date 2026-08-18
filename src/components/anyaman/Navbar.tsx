@@ -31,12 +31,20 @@ export function Navbar() {
           ))}
         </ul>
 
-        <a
-          href="#mulai"
-          className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
-        >
-          Coba Gratis
-        </a>
+        <div className="flex items-center gap-5">
+          <a
+            href="/dashboard"
+            className="hidden text-sm text-ink-soft transition-colors hover:text-ink sm:block"
+          >
+            Dashboard
+          </a>
+          <a
+            href="#mulai"
+            className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
+          >
+            Coba Gratis
+          </a>
+        </div>
       </nav>
     </header>
   );
