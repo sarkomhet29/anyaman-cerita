@@ -1,0 +1,67 @@
+// Prisma schema — definisi struktur database
+// Dokumentasi: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Contoh model dasar — silakan diubah sesuai kebutuhan
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String   // simpan hash-nya saja (bcrypt), jangan plaintext
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Satu baris = satu undangan yang dibuat pengguna
+model Undangan {
+  id             String   @id @default(cuid())
+  slug           String   @unique // dipakai di URL publik: /u/{slug}
+  jenisAcara     String // Pernikahan, Khitanan, Aqiqah, dst
+  namaUtama      String // "Ayu & Bagas" atau "Aqiqah Baby Alma"
+  tanggalAcara   DateTime
+  waktuAcara     String? // teks bebas, misal "09.00 - selesai"
+  lokasi         String // nama tempat/venue
+  alamatLengkap  String?
+  mapsUrl        String?
+  tema           String   @default("songket-senja")
+  pesanUndangan  String? // kalimat pembuka/doa, opsional
+  status         String   @default("draft") // draft | aktif
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tamu           Tamu[]
+
+  @@index([status])
+}
+
+// Daftar tamu per undangan — dipakai untuk RSVP & buku ucapan
+model Tamu {
+  id         String   @id @default(cuid())
+  undangan   Undangan @relation(fields: [undanganId], references: [id], onDelete: Cascade)
+  undanganId String
+  nama       String
+  kehadiran  String? // "hadir" | "tidak_hadir" | null (belum merespons)
+  ucapan     String?
+  createdAt  DateTime @default(now())
+
+  @@index([undanganId])
+}

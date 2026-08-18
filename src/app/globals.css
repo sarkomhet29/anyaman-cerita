@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  /* -- Anyaman Cerita — simple, Apple-inspired palette -------------- */
+  --ink: #1d1d1f;        /* near-black — headlines, primary text */
+  --ink-soft: #6e6e73;   /* neutral gray — secondary text */
+  --line: #e5e5e5;       /* hairline borders/dividers */
+  --surface: #ffffff;    /* primary background */
+  --surface-2: #f5f5f7;  /* secondary/section background */
+  --accent: #b8842f;     /* single brand accent — warm brass (was gold) */
+  --accent-2: #8f6624;   /* accent hover/darker */
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+
+  --font-display: var(--font-body);
+  --font-body: var(--font-body);
+  --font-utility: var(--font-utility);
+}
+
+body {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* A single thin thread motif — kept minimal, used once as a brand
+   signature rather than a decorative pattern throughout. */
+.thread-mark {
+  width: 40px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
