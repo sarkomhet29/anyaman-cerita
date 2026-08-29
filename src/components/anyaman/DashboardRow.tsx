@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition } from "react";
 import { ubahStatusAction } from "@/app/dashboard/actions";
 
@@ -27,12 +28,14 @@ export function DashboardRow({ row }: { row: Row }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 border-b border-line px-6 py-5 last:border-b-0 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-center">
-      <div>
-        <p className="font-medium text-ink">{row.namaUtama}</p>
+      <Link href={`/dashboard/undangan/${row.id}/edit`} className="group">
+        <p className="font-medium text-ink group-hover:text-accent transition-colors cursor-pointer">
+          {row.namaUtama}
+        </p>
         <p className="text-sm text-ink-soft">
           {row.jenisAcara} · {formatTanggal.format(row.tanggalAcara)}
         </p>
-      </div>
+      </Link>
 
       <div className="text-sm text-ink-soft">
         <span className="text-ink">{row.jumlahHadir}</span> hadir ·{" "}
@@ -51,6 +54,18 @@ export function DashboardRow({ row }: { row: Row }) {
       </span>
 
       <div className="flex gap-2">
+        <Link
+          href={`/dashboard/undangan/${row.id}/edit`}
+          className="rounded-full border border-accent bg-accent/5 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/10"
+        >
+          Edit
+        </Link>
+        <Link
+          href={`/dashboard/undangan/${row.id}`}
+          className="rounded-full border border-accent bg-accent/5 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/10"
+        >
+          Statistik
+        </Link>
         <a
           href={`/u/${row.slug}`}
           target="_blank"

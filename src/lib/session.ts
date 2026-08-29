@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
 // Sesi login disimpan sebagai JWT bertanda tangan di cookie httpOnly —
 // tidak bisa dibaca/diubah lewat JavaScript di browser, dan tidak butuh
@@ -42,6 +43,13 @@ export async function verifikasiSessionToken(
   } catch {
     return null;
   }
+}
+
+export async function getSession(): Promise<SessionPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  return verifikasiSessionToken(token);
 }
 
 export { COOKIE_NAME };

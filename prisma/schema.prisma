@@ -16,9 +16,14 @@ model User {
   email     String   @unique
   name      String?
   password  String   // simpan hash-nya saja (bcrypt), jangan plaintext
+  role      String   @default("user") // user | admin
+  paketId   String?  // ID paket berlangganan
+  paket     Paket?   @relation(fields: [paketId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   posts     Post[]
+  undangan  Undangan[]
+  transactions Transaction[]
 }
 
 model Post {
@@ -32,10 +37,40 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
+// Paket Berlangganan (Uji Coba, Dasar, Lengkap, Premium)
+model Paket {
+  id          String   @id @default(cuid())
+  nama        String   @unique // "Uji Coba", "Dasar", "Lengkap", "Premium"
+  harga       Int      // dalam rupiah, 0 untuk uji coba
+  deskripsi   String?
+  urutan      Int      @default(0) // untuk sorting
+  highlight   Boolean  @default(false) // tandai paket favorit
+  users       User[]
+  fitur       PaketFitur[]
+  transactions Transaction[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([urutan])
+}
+
+// Relasi antara Paket dan Fitur (Many-to-Many)
+model PaketFitur {
+  id       String @id @default(cuid())
+  paketId  String
+  paket    Paket  @relation(fields: [paketId], references: [id], onDelete: Cascade)
+  fiturKey String // key dari FEATURES di src/lib/features.ts
+  
+  @@unique([paketId, fiturKey])
+  @@index([paketId])
+}
+
 // Satu baris = satu undangan yang dibuat pengguna
 model Undangan {
   id             String   @id @default(cuid())
   slug           String   @unique // dipakai di URL publik: /u/{slug}
+  userId         String   // siapa yang membuat undangan
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   jenisAcara     String // Pernikahan, Khitanan, Aqiqah, dst
   namaUtama      String // "Ayu & Bagas" atau "Aqiqah Baby Alma"
   tanggalAcara   DateTime
@@ -51,6 +86,7 @@ model Undangan {
   tamu           Tamu[]
 
   @@index([status])
+  @@index([userId])
 }
 
 // Daftar tamu per undangan — dipakai untuk RSVP & buku ucapan
@@ -64,4 +100,39 @@ model Tamu {
   createdAt  DateTime @default(now())
 
   @@index([undanganId])
+}
+
+// Pesan support yang dikirim lewat form Contact
+model ContactMessage {
+  id        String   @id @default(cuid())
+  nama      String
+  email     String
+  subjek    String
+  pesan     String
+  status    String   @default("baru") // baru | dibaca | selesai
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Transaksi pembayaran upgrade paket
+model Transaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paketId         String
+  paket           Paket    @relation(fields: [paketId], references: [id])
+  amount          Int      // jumlah pembayaran dalam rupiah
+  status          String   @default("pending") // pending | success | failed | expired
+  midtransId      String?  // transaction ID dari Midtrans
+  orderId         String   @unique // order ID unik untuk Midtrans
+  paymentUrl      String?  // URL untuk redirect ke Midtrans
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  paidAt          DateTime? // waktu pembayaran berhasil
+
+  @@index([userId])
+  @@index([status])
+  @@index([midtransId])
 }

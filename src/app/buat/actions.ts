@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { buatSlug } from "@/lib/slug";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export type BuatUndanganState = {
@@ -12,6 +13,12 @@ export async function buatUndanganAction(
   _prevState: BuatUndanganState,
   formData: FormData
 ): Promise<BuatUndanganState> {
+  // Get session untuk dapat userId
+  const session = await getSession();
+  if (!session) {
+    return { error: "Anda harus login terlebih dahulu." };
+  }
+
   const jenisAcara = String(formData.get("jenisAcara") || "").trim();
   const namaUtama = String(formData.get("namaUtama") || "").trim();
   const tanggalAcara = String(formData.get("tanggalAcara") || "").trim();
@@ -36,6 +43,7 @@ export async function buatUndanganAction(
   const undangan = await prisma.undangan.create({
     data: {
       slug,
+      userId: session.userId,
       jenisAcara,
       namaUtama,
       tanggalAcara: tanggal,

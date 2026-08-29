@@ -1,8 +1,9 @@
+"use client";
+
+import Link from "next/link";
+
 const themes = [
-  { name: "Songket Senja", price: "Rp39.000" },
-  { name: "Ikat Nusantara", price: "Rp39.000" },
-  { name: "Lurik Sederhana", price: "Rp49.000" },
-  { name: "Sutra Aksara", price: "Rp59.000" },
+  { name: "Songket Senja", price: "Rp39.000", value: "songket-senja" },
 ];
 
 export function ThemeGallery() {
@@ -21,8 +22,9 @@ export function ThemeGallery() {
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {themes.map((theme) => (
-            <div
+            <Link
               key={theme.name}
+              href={`/buat?tema=${theme.value}`}
               className="group overflow-hidden rounded-2xl border border-line bg-surface-2 transition-shadow hover:shadow-lg"
             >
               <div className="flex h-48 flex-col items-center justify-center gap-2 bg-surface p-6 text-center">
@@ -31,11 +33,11 @@ export function ThemeGallery() {
               </div>
               <div className="flex items-center justify-between border-t border-line px-5 py-4">
                 <span className="font-mono text-sm text-ink">{theme.price}</span>
-                <button className="text-sm font-medium text-accent transition-colors group-hover:text-accent-2">
+                <span className="text-sm font-medium text-accent transition-colors group-hover:text-accent-2">
                   Pakai →
-                </button>
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

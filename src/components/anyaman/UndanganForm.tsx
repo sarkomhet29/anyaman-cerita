@@ -1,7 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { buatUndanganAction, type BuatUndanganState } from "@/app/buat/actions";
+import { useFormData } from "@/context/FormDataContext";
+import { useUserFeatures } from "@/hooks/useFeatures";
+import { FEATURES } from "@/lib/features";
 
 const jenisAcaraOptions = [
   "Pernikahan",
@@ -15,18 +18,55 @@ const jenisAcaraOptions = [
 
 const temaOptions = [
   { value: "songket-senja", label: "Songket Senja" },
-  { value: "ikat-nusantara", label: "Ikat Nusantara" },
-  { value: "lurik-sederhana", label: "Lurik Sederhana" },
-  { value: "sutra-aksara", label: "Sutra Aksara" },
 ];
 
 const initialState: BuatUndanganState = { error: null };
 
-export function UndanganForm() {
+export function UndanganForm({ preSelectedTema }: { preSelectedTema?: string }) {
   const [state, formAction, isPending] = useActionState(
     buatUndanganAction,
     initialState
   );
+  const { updateFormData } = useFormData();
+  const { data: userFeatures, loading: featuresLoading } = useUserFeatures();
+  const features = userFeatures?.features ?? [];
+  const updateFormDataRef = useRef(updateFormData);
+
+  useEffect(() => {
+    updateFormDataRef.current = updateFormData;
+  });
+
+  // Update preview saat form berubah
+  useEffect(() => {
+    const form = document.querySelector("form");
+    if (!form) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const handleFormChange = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const formDataObj = new FormData(form);
+        const data: Record<string, string> = {};
+        formDataObj.forEach((value, key) => {
+          data[key] = String(value);
+        });
+        updateFormDataRef.current(data);
+      }, 100);
+    };
+
+    form.addEventListener("change", handleFormChange);
+    form.addEventListener("input", handleFormChange);
+
+    // Initial update
+    handleFormChange();
+
+    return () => {
+      form.removeEventListener("change", handleFormChange);
+      form.removeEventListener("input", handleFormChange);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <form action={formAction} className="mx-auto max-w-xl">
@@ -123,7 +163,7 @@ export function UndanganForm() {
                   type="radio"
                   name="tema"
                   value={opsi.value}
-                  defaultChecked={i === 0}
+                  defaultChecked={preSelectedTema === opsi.value || i === 0}
                   className="sr-only"
                 />
                 {opsi.label}
@@ -145,6 +185,64 @@ export function UndanganForm() {
             className={inputClass}
           />
         </Field>
+
+        {/* Feature-Gated Fields */}
+        {features.includes(FEATURES.FOTO_GALERY_VIDEO) && (
+          <Field label="Galeri Foto" htmlFor="galeri" hint="Opsional">
+            <input
+              id="galeri"
+              name="galeri"
+              type="text"
+              placeholder="URL folder Google Drive atau link galeri"
+              className={inputClass}
+            />
+          </Field>
+        )}
+
+        {features.includes(FEATURES.RATUSAN_MUSIK_CUSTOM) && (
+          <Field label="Musik Latar" htmlFor="musik" hint="Opsional">
+            <input
+              id="musik"
+              name="musik"
+              type="text"
+              placeholder="URL YouTube atau nama lagu"
+              className={inputClass}
+            />
+          </Field>
+        )}
+
+        {features.includes(FEATURES.LINK_LIVE_STREAMING) && (
+          <Field label="Link Live Streaming" htmlFor="liveStreaming" hint="Opsional">
+            <input
+              id="liveStreaming"
+              name="liveStreaming"
+              type="url"
+              placeholder="https://youtube.com/watch?v=..."
+              className={inputClass}
+            />
+          </Field>
+        )}
+
+        {features.includes(FEATURES.COUNTDOWN_HARI_H) && (
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+            <p className="text-sm text-accent font-medium">
+              ✓ Countdown Hari-H: Diaktifkan
+            </p>
+          </div>
+        )}
+
+        {/* Paket Info */}
+        {!featuresLoading && userFeatures?.paket && (
+          <div className="rounded-xl border border-line bg-surface-2 p-4">
+            <p className="text-xs text-ink-soft">Paket Anda:</p>
+            <p className="text-sm font-semibold text-ink">{userFeatures.paket.nama}</p>
+            {features.length < 31 && (
+              <a href="/harga" className="text-xs text-accent hover:underline mt-2 inline-block">
+                Upgrade untuk lebih banyak fitur →
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       {state.error && (

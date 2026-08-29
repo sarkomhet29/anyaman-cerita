@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function CTASection() {
   return (
     <section id="mulai" className="bg-surface py-24 text-center">
@@ -10,12 +12,12 @@ export function CTASection() {
           hitungan menit.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <a
-            href="#tema"
+          <Link
+            href="/register"
             className="rounded-full bg-ink px-8 py-3.5 text-base font-medium text-white transition-colors hover:bg-black"
           >
             Coba Buat Gratis
-          </a>
+          </Link>
           <a
             href="https://wa.me/"
             className="rounded-full border border-line px-8 py-3.5 text-base font-medium text-ink transition-colors hover:border-ink"

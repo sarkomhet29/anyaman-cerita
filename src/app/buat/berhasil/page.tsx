@@ -36,12 +36,29 @@ export default async function BerhasilPage({
           )}
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a
-              href="#"
-              className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white hover:bg-black"
-            >
-              Lihat Undangan
-            </a>
+            {slug ? (
+              <>
+                <a
+                  href={`/u/${slug}`}
+                  className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white hover:bg-black"
+                >
+                  Lihat Undangan
+                </a>
+                <a
+                  href="/dashboard"
+                  className="rounded-full border border-line px-6 py-3 text-sm font-medium text-ink hover:border-ink"
+                >
+                  Ke Dashboard
+                </a>
+              </>
+            ) : (
+              <a
+                href="/dashboard"
+                className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white hover:bg-black"
+              >
+                Ke Dashboard
+              </a>
+            )}
             <a
               href="/buat"
               className="rounded-full border border-line px-6 py-3 text-sm font-medium text-ink hover:border-ink"
