@@ -5,12 +5,12 @@ const prisma = new PrismaClient();
 
 // ============================================================
 // AKUN ADMIN ANYAMAN CERITA
-// Ubah nilai di bawah ini sesuai kebutuhan, lalu jalankan:
+// Isi lewat .env (sebaiknya), atau langsung ubah di bawah ini:
 //   node prisma/seed-admin.js
 // ============================================================
-const ADMIN_EMAIL = "admin@anyamancerita.com";
-const ADMIN_NAME = "Administrator";
-const ADMIN_PASSWORD = "Admin@12345";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@anyamancerita.com";
+const ADMIN_NAME = process.env.ADMIN_NAME || "Administrator";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@12345";
 
 async function main() {
   try {
