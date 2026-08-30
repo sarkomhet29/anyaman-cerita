@@ -8,7 +8,15 @@ export async function GET() {
 
     const transactions = await prisma.transaction.findMany({
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            role: true,
+          },
+        },
         paket: true,
       },
       orderBy: { createdAt: "desc" },

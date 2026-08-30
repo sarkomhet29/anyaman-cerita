@@ -1,12 +1,14 @@
-import { getSession } from "@/lib/session";
+import { getAdminSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Check apakah user adalah admin
+ * Cek apakah user adalah admin — dipakai di halaman /panel-kelola/*,
+ * server action admin, dan API /api/admin/*.
+ * Autoritatif: cek sesi admin COOKIE + cek ulang role di database.
  */
 export async function requireAdmin() {
-  const session = await getSession();
-  
+  const session = await getAdminSession();
+
   if (!session) {
     throw new Error("Unauthorized");
   }

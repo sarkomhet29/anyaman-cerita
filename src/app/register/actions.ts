@@ -18,6 +18,7 @@ export async function registerAction(
   const parsed = registerSchema.safeParse({
     email: String(formData.get("email") || ""),
     name: String(formData.get("name") || "") || undefined,
+    phone: String(formData.get("phone") || ""),
     password: String(formData.get("password") || ""),
   });
 
@@ -52,6 +53,7 @@ export async function registerAction(
     data: {
       email: parsed.data.email,
       name: parsed.data.name,
+      phone: (parsed.data.phone || "").trim() || null,
       password: hashedPassword,
       paketId: paketUjiCoba.id,
     },

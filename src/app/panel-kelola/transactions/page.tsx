@@ -9,7 +9,7 @@ export default async function AdminTransactionsPage() {
   try {
     await requireAdmin();
   } catch {
-    redirect("/login");
+    redirect("/panel-kelola/login");
   }
 
   const transactions = await prisma.transaction.findMany({
@@ -20,13 +20,16 @@ export default async function AdminTransactionsPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const LUNAS = ["success", "aktif"]; // Midtrans sukses + manual disetujui
+
   const stats = {
     total: transactions.length,
-    success: transactions.filter((t) => t.status === "success").length,
+    success: transactions.filter((t) => LUNAS.includes(t.status)).length,
+    menunggu: transactions.filter((t) => t.status === "menunggu_verifikasi").length,
     pending: transactions.filter((t) => t.status === "pending").length,
     failed: transactions.filter((t) => t.status === "failed").length,
     totalRevenue: transactions
-      .filter((t) => t.status === "success")
+      .filter((t) => LUNAS.includes(t.status))
       .reduce((sum, t) => sum + t.amount, 0),
   };
 
@@ -42,7 +45,7 @@ export default async function AdminTransactionsPage() {
                 Total: {stats.total} transaksi
               </p>
             </div>
-            <Link href="/admin" className="text-accent hover:underline">
+            <Link href="/panel-kelola" className="text-accent hover:underline">
               ← Kembali
             </Link>
           </div>
@@ -53,21 +56,21 @@ export default async function AdminTransactionsPage() {
               <p className="text-2xl font-bold text-ink mt-2">{stats.total}</p>
             </div>
             <div className="rounded-2xl border border-line bg-surface-2 p-6">
-              <p className="text-sm text-ink-soft">Berhasil</p>
+              <p className="text-sm text-ink-soft">Lunas</p>
               <p className="text-2xl font-bold text-green-600 mt-2">
                 {stats.success}
               </p>
             </div>
             <div className="rounded-2xl border border-line bg-surface-2 p-6">
-              <p className="text-sm text-ink-soft">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600 mt-2">
-                {stats.pending}
+              <p className="text-sm text-ink-soft">Menunggu Verifikasi</p>
+              <p className="text-2xl font-bold text-blue-600 mt-2">
+                {stats.menunggu}
               </p>
             </div>
             <div className="rounded-2xl border border-line bg-surface-2 p-6">
-              <p className="text-sm text-ink-soft">Gagal / Kadaluarsa</p>
-              <p className="text-2xl font-bold text-red-600 mt-2">
-                {stats.failed}
+              <p className="text-sm text-ink-soft">Pending / Gagal</p>
+              <p className="text-2xl font-bold text-yellow-600 mt-2">
+                {stats.pending + stats.failed}
               </p>
             </div>
             <div className="rounded-2xl border border-line bg-surface-2 p-6">

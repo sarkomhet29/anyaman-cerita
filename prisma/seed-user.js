@@ -10,6 +10,7 @@ async function main() {
     const TEST_EMAIL = process.env.SEED_USER_EMAIL || "test@example.com";
     const TEST_PASSWORD = process.env.SEED_USER_PASSWORD || "Password123";
     const TEST_NAME = process.env.SEED_USER_NAME || "Test User";
+    const TEST_PHONE = process.env.SEED_USER_PHONE || "081234567890";
 
     // Get paket Uji Coba
     const paket = await prisma.paket.findUnique({
@@ -29,12 +30,14 @@ async function main() {
       where: { email: TEST_EMAIL },
       update: {
         name: TEST_NAME,
+        phone: TEST_PHONE,
         password,
         paketId: paket.id,
       },
       create: {
         email: TEST_EMAIL,
         name: TEST_NAME,
+        phone: TEST_PHONE,
         password,
         paketId: paket.id,
       },

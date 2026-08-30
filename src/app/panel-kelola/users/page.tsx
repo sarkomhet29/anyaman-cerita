@@ -15,7 +15,7 @@ export default async function AdminUsersPage() {
   try {
     admin = await requireAdmin();
   } catch {
-    redirect("/login");
+    redirect("/panel-kelola/login");
   }
 
   const [users, pakets] = await Promise.all([
@@ -43,7 +43,7 @@ export default async function AdminUsersPage() {
                 Total: {users.length} pengguna
               </p>
             </div>
-            <Link href="/admin" className="text-accent hover:underline">
+            <Link href="/panel-kelola" className="text-accent hover:underline">
               ← Kembali
             </Link>
           </div>

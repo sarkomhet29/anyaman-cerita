@@ -9,7 +9,7 @@ export default async function AdminUndanganPage() {
   try {
     await requireAdmin();
   } catch {
-    redirect("/login");
+    redirect("/panel-kelola/login");
   }
 
   const undanganList = await prisma.undangan.findMany({
@@ -35,7 +35,7 @@ export default async function AdminUndanganPage() {
                 Total: {undanganList.length} · {aktif} aktif · {draft} draft
               </p>
             </div>
-            <Link href="/admin" className="text-accent hover:underline">
+            <Link href="/panel-kelola" className="text-accent hover:underline">
               ← Kembali
             </Link>
           </div>

@@ -44,6 +44,23 @@ export function RegisterForm() {
       </div>
 
       <div>
+        <label htmlFor="phone" className="block text-sm font-medium text-ink">
+          Nomor WhatsApp
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          className={inputClass}
+          placeholder="08xxxxxxxxxx"
+        />
+        <p className="mt-2 text-xs text-ink-soft">
+          Dipakai untuk notifikasi verifikasi pembayaran via WhatsApp.
+        </p>
+      </div>
+
+      <div>
         <label
           htmlFor="password"
           className="block text-sm font-medium text-ink"

@@ -15,8 +15,11 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  phone     String?  // nomor WhatsApp klien (opsional) — dipakai notifikasi & detail pesanan
   password  String   // simpan hash-nya saja (bcrypt), jangan plaintext
   role      String   @default("user") // user | admin
+  twoFactorSecret   String? // kunci rahasia TOTP (Base32) untuk 2FA admin
+  twoFactorEnabled  Boolean @default(false)
   paketId   String?  // ID paket berlangganan
   paket     Paket?   @relation(fields: [paketId], references: [id])
   createdAt DateTime @default(now())
@@ -24,6 +27,25 @@ model User {
   posts     Post[]
   undangan  Undangan[]
   transactions Transaction[]
+  verifiedTransactions Transaction[] @relation("Verifikator")
+  loginLogs LoginLog[]
+}
+
+// Log login admin (waktu, IP, user-agent, sukses/gagal) untuk monitoring.
+model LoginLog {
+  id        String   @id @default(cuid())
+  email     String
+  userId    String?  // diisi jika user ditemukan
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ip        String?  // alamat IP pemohon
+  userAgent String?  // user-agent browser
+  status    String   @default("success") // success | failed
+  reason    String?  // misal "password salah", "kode 2FA salah", "terkunci"
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Post {
@@ -81,9 +103,11 @@ model Undangan {
   tema           String   @default("songket-senja")
   pesanUndangan  String? // kalimat pembuka/doa, opsional
   status         String   @default("draft") // draft | aktif
+  aktifSampai    DateTime? // batas aktif undangan (masa berlangganan), diisi saat pembayaran disetujui
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   tamu           Tamu[]
+  transactions   Transaction[]
 
   @@index([status])
   @@index([userId])
@@ -117,14 +141,35 @@ model ContactMessage {
 }
 
 // Transaksi pembayaran upgrade paket
+// Alur manual: pending -> menunggu_verifikasi (bukti diunggah) -> aktif | ditolak
+// Alur Midtrans: pending -> success | failed | expired
+enum StatusPembayaran {
+  pending
+  menunggu_verifikasi
+  aktif
+  ditolak
+  success
+  failed
+  expired
+}
+
 model Transaction {
-  id              String   @id @default(cuid())
+  id              String          @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   paketId         String
-  paket           Paket    @relation(fields: [paketId], references: [id])
-  amount          Int      // jumlah pembayaran dalam rupiah
-  status          String   @default("pending") // pending | success | failed | expired
+  paket           Paket           @relation(fields: [paketId], references: [id], onDelete: Cascade)
+  amount          Int
+  status          StatusPembayaran @default(pending)
+  paymentMethod   String   @default("manual") // manual (transfer) | midtrans
+  buktiUrl        String?  // path file bukti transfer (diunggah klien)
+  nominalBukti    Int?     // nominal tertera di bukti transfer — isian admin saat verifikasi manual
+  catatanAdmin    String?  // catatan/alasan admin (misal alasan penolakan)
+  undanganId      String?  // undangan yang akan diaktifkan setelah pembayaran disetujui
+  undangan        Undangan? @relation(fields: [undanganId], references: [id], onDelete: SetNull)
+  verifiedById    String?  // admin yang memverifikasi pembayaran manual
+  verifiedBy      User?    @relation("Verifikator", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt      DateTime? // waktu pembayaran disetujui/ditolak
   midtransId      String?  // transaction ID dari Midtrans
   orderId         String   @unique // order ID unik untuk Midtrans
   paymentUrl      String?  // URL untuk redirect ke Midtrans

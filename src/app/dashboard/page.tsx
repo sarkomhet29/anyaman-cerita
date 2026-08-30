@@ -4,6 +4,7 @@ import { DashboardRow } from "@/components/anyaman/DashboardRow";
 import { FiturDashboard } from "@/components/anyaman/FiturDashboard";
 import { logoutAction } from "@/app/login/actions";
 import { getSession } from "@/lib/session";
+import type { StatusPembayaran } from "@prisma/client";
 
 type DashboardRowData = {
   id: string;
@@ -28,6 +29,17 @@ export default async function DashboardPage() {
     where: { userId: session.userId },
     include: { tamu: true },
     orderBy: { createdAt: "desc" },
+  });
+
+  // Pembayaran manual yang belum tuntas (perlu upload bukti / cek status)
+  const pembayaranBelumSelesai = await prisma.transaction.findMany({
+    where: {
+      userId: session.userId,
+      paymentMethod: "manual",
+      status: { in: ["pending", "menunggu_verifikasi", "ditolak"] as StatusPembayaran[] },
+    },
+    include: { paket: true },
+    orderBy: { createdAt: "asc" },
   });
 
   const rows: DashboardRowData[] = daftarUndangan.map(
@@ -83,6 +95,38 @@ export default async function DashboardPage() {
               </form>
             </div>
           </div>
+
+          {/* Pembayaran belum selesai */}
+          {pembayaranBelumSelesai.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-xl font-bold text-ink mb-6">Pembayaran</h2>
+              <div className="space-y-3">
+                {pembayaranBelumSelesai.map((tx) => (
+                  <a
+                    key={tx.id}
+                    href={`/dashboard/pembayaran/${tx.id}`}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface-2 p-5 transition-colors hover:border-ink"
+                  >
+                    <div>
+                      <p className="font-medium text-ink">
+                        Pembayaran paket {tx.paket.nama}
+                      </p>
+                      <p className="text-sm text-ink-soft mt-0.5">
+                        {tx.status === "pending"
+                          ? "Menunggu upload bukti transfer"
+                          : tx.status === "ditolak"
+                          ? "Bukti ditolak — perlu unggah ulang"
+                          : "Menunggu verifikasi admin"}
+                      </p>
+                    </div>
+                    <span className="whitespace-nowrap text-sm font-semibold text-accent">
+                      Lanjutkan →
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Fitur Dashboard */}
           <div className="mt-12">

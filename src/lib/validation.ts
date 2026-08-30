@@ -6,6 +6,11 @@ import { z } from "zod";
 export const registerSchema = z.object({
   email: z.string().email("Email tidak valid"),
   name: z.string().min(2, "Nama minimal 2 karakter").optional(),
+  phone: z
+    .string()
+    .regex(/^[0-9+\s-]{8,20}$/, "Nomor WhatsApp tidak valid")
+    .optional()
+    .or(z.literal("")),
   password: z
     .string()
     .min(8, "Password minimal 8 karakter")

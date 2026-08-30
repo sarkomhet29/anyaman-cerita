@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { paketId } = body;
+    const { paketId, method } = body;
+    const metode = method === "manual" ? "manual" : "midtrans";
 
     if (!paketId) {
       return NextResponse.json(
@@ -60,6 +61,30 @@ export async function POST(request: NextRequest) {
     // Generate unique order ID
     const orderId = `ORDER-${session.userId}-${Date.now()}`;
 
+    // --- Metode manual (transfer) ---
+    // Buat transaksi pending dan arahkan klien ke halaman upload bukti.
+    if (metode === "manual") {
+      const transaction = await prisma.transaction.create({
+        data: {
+          userId: session.userId,
+          paketId,
+          amount: paket.harga,
+          status: "pending",
+          paymentMethod: "manual",
+          orderId,
+        },
+      });
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+      return NextResponse.json({
+        success: true,
+        message: "Silakan transfer dan unggah bukti pembayaran",
+        redirectUrl: `${appUrl}/dashboard/pembayaran/${transaction.id}`,
+      });
+    }
+
+    // --- Metode Midtrans ---
     // Create transaction record
     const transaction = await prisma.transaction.create({
       data: {

@@ -7,7 +7,16 @@ export async function GET() {
     await requireAdmin();
 
     const users = await prisma.user.findMany({
-      include: {
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        twoFactorEnabled: true,
+        paketId: true,
+        createdAt: true,
+        updatedAt: true,
         paket: true,
         _count: {
           select: { undangan: true, transactions: true },

@@ -14,6 +14,7 @@ export function CheckoutForm({ paket }: { paket: Paket }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [metode, setMetode] = useState<"manual" | "midtrans">("manual");
 
   const handleCheckout = async () => {
     try {
@@ -24,7 +25,7 @@ export function CheckoutForm({ paket }: { paket: Paket }) {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paketId: paket.id }),
+        body: JSON.stringify({ paketId: paket.id, method: metode }),
       });
 
       const data = await response.json();
@@ -80,13 +81,76 @@ export function CheckoutForm({ paket }: { paket: Paket }) {
         </div>
       )}
 
+      {/* Metode pembayaran */}
+      {paket.harga > 0 && (
+        <div className="mb-6 space-y-2">
+          <p className="text-xs font-semibold text-ink-soft uppercase">
+            Metode Pembayaran
+          </p>
+          <label
+            className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+              metode === "manual"
+                ? "border-ink bg-surface-2"
+                : "border-line hover:border-ink"
+            }`}
+          >
+            <input
+              type="radio"
+              name="metode"
+              value="manual"
+              checked={metode === "manual"}
+              onChange={() => setMetode("manual")}
+              className="accent-ink"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">
+                Transfer Manual
+              </span>
+              <span className="block text-xs text-ink-soft">
+                Transfer ke rekening, lalu unggah bukti. Diverifikasi admin.
+              </span>
+            </span>
+          </label>
+          <label
+            className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+              metode === "midtrans"
+                ? "border-ink bg-surface-2"
+                : "border-line hover:border-ink"
+            }`}
+          >
+            <input
+              type="radio"
+              name="metode"
+              value="midtrans"
+              checked={metode === "midtrans"}
+              onChange={() => setMetode("midtrans")}
+              className="accent-ink"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">
+                Midtrans (Otomatis)
+              </span>
+              <span className="block text-xs text-ink-soft">
+                Kartu kredit, e-wallet, transfer bank — langsung aktif.
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
       {/* Checkout Button */}
       <button
         onClick={handleCheckout}
         disabled={loading}
         className="w-full rounded-full bg-ink px-6 py-3.5 text-base font-medium text-white hover:bg-black disabled:opacity-60 mb-3 transition-colors"
       >
-        {loading ? "Memproses..." : paket.harga === 0 ? "Aktifkan Gratis" : "Lanjutkan ke Pembayaran"}
+        {loading
+          ? "Memproses..."
+          : paket.harga === 0
+          ? "Aktifkan Gratis"
+          : metode === "manual"
+          ? "Lanjutkan Bayar Manual"
+          : "Lanjutkan ke Pembayaran"}
       </button>
 
       <Link

@@ -14,7 +14,7 @@ export default async function AdminPaketPage() {
   try {
     await requireAdmin();
   } catch {
-    redirect("/login");
+    redirect("/panel-kelola/login");
   }
 
   const pakets = await prisma.paket.findMany({
@@ -39,7 +39,7 @@ export default async function AdminPaketPage() {
                 Total: {pakets.length} paket
               </p>
             </div>
-            <Link href="/admin" className="text-accent hover:underline">
+            <Link href="/panel-kelola" className="text-accent hover:underline">
               ← Kembali
             </Link>
           </div>
